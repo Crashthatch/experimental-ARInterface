@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.XR.iOS;
 using System.Text;
 
-namespace Utils
+namespace ARKitUtils
 {
 	/// <summary>
 	/// Since unity doesn't flag the Vector4 as serializable, we
