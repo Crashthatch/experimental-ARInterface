@@ -53,6 +53,9 @@ namespace UnityARInterface
         private List<Vector4> m_TempPointCloud = new List<Vector4>();
         private Dictionary<ARAnchor, Anchor> m_Anchors = new Dictionary<ARAnchor, Anchor>();
 
+        private TrackingState lastFrameTrackingState = TrackingState.Stopped;
+        private Pose lastFramePose = new Pose();
+        
         public override bool IsSupported
         {
             get
@@ -342,10 +345,10 @@ namespace UnityARInterface
             }
         }
 
-		public override Matrix4x4 GetDisplayTransform()
-		{
-			return m_DisplayTransform;
-		}
+        public override Matrix4x4 GetDisplayTransform()
+        {
+            return m_DisplayTransform;
+        }
 
         private void CalculateDisplayTransform()
         {
@@ -417,6 +420,32 @@ namespace UnityARInterface
             }
 
             AsyncTask.OnUpdate();
+
+            if (Frame.TrackingState != lastFrameTrackingState && Frame.TrackingState != TrackingState.Tracking)
+            {
+                OnTrackingLost(Frame.Pose);
+            }
+
+            if (Frame.TrackingState != lastFrameTrackingState && Frame.TrackingState == TrackingState.Tracking)
+            {
+                OnTrackingStarted(Frame.Pose);
+            }
+
+            if (Frame.TrackingState == TrackingState.Tracking
+                && ((Frame.Pose.position - lastFramePose.position).magnitude > 1
+                    || Quaternion.Angle(Frame.Pose.rotation, lastFramePose.rotation) > 30)
+                )
+            {
+                Mapbox.Unity.Utilities.Console.Instance.Log(string.Format("Jump strength: position: {0}, rotation: {1} ", (Frame.Pose.position - lastFramePose.position).magnitude, Quaternion.Angle(Frame.Pose.rotation, lastFramePose.rotation)), "yellow");
+                OnTrackingJumped(Frame.Pose);
+            }
+
+            //Save frameTrackingState so we can compare on next frame & detect changes.
+            lastFrameTrackingState = Frame.TrackingState;
+            if (Frame.TrackingState == TrackingState.Tracking)
+            {
+                lastFramePose = Frame.Pose;
+            }
 
             if (Frame.TrackingState != TrackingState.Tracking)
                 return;

@@ -46,6 +46,26 @@ namespace UnityARInterface
         public static Action<BoundedPlane> planeUpdated;
         public static Action<BoundedPlane> planeRemoved;
 
+        //TODO: Implement these in iOS ARKit & Editor subclasses. Only implemented in ARCoreInterface atm.
+        public static Action<Pose> trackingLost;
+        public static Action<Pose> trackingStarted;
+        public static Action<Pose> trackingJumped;
+
+        //Subclasses may call these on* functions, and they will execute the delegate functions (external handlers for events).
+        protected void OnTrackingLost(Pose pose)
+        {
+            trackingLost(pose);
+        }
+        protected void OnTrackingStarted(Pose pose)
+        {
+            trackingStarted(pose);
+        }
+        protected void OnTrackingJumped(Pose pose)
+        {
+            trackingJumped(pose);
+        }
+
+
         public virtual bool IsRunning { get; protected set; } 
 
         public virtual bool IsSupported { get { return true; } }
@@ -75,7 +95,7 @@ namespace UnityARInterface
 
         public abstract LightEstimate GetLightEstimate();
 
-		public abstract Matrix4x4 GetDisplayTransform ();
+        public abstract Matrix4x4 GetDisplayTransform ();
 
         protected void OnPlaneAdded(BoundedPlane plane)
         {
