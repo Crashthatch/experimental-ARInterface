@@ -431,7 +431,8 @@ namespace UnityARInterface
                 OnTrackingStarted(Frame.Pose);
             }
 
-            if (Frame.TrackingState == TrackingState.Tracking
+            if (lastFrameTrackingState == TrackingState.Tracking //Do not fire "OnTrackingJumped" on the first frame when tracking just started (OnTrackingStarted will fire instead, see above).
+                && Frame.TrackingState == TrackingState.Tracking
                 && ((Frame.Pose.position - lastFramePose.position).magnitude > 1
                     || Quaternion.Angle(Frame.Pose.rotation, lastFramePose.rotation) > 30)
                 )
