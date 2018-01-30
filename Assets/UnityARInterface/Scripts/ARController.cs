@@ -28,6 +28,8 @@ namespace UnityARInterface
         [SerializeField]
         private float m_Scale = 1f;
 
+        private Vector3 positionAdjustment = Vector3.zero;
+
         public float scale
         {
             set
@@ -93,12 +95,30 @@ namespace UnityARInterface
             Pose pose = new Pose();
             if (m_ARInterface.TryGetPose(ref pose))
             {
-                m_ARCamera.transform.localPosition = pose.position;
+                m_ARCamera.transform.localPosition = pose.position - positionAdjustment;
                 m_ARCamera.transform.localRotation = pose.rotation;
                 var parent = m_ARCamera.transform.parent;
                 if (parent != null)
                     parent.localScale = Vector3.one * scale;
             }
+        }
+
+        //Sets the positionAdjustment, so that future localPositions will be set relative to this point.
+        // eg. if Camera was at (10,0,0) and resetLocalPositionAdjustment() was called, on the next frame m_ARCamera.transform.localPosition will be set to (0,0,0) and continue counting from there.
+        public Vector3 resetLocalPositionAdjustment()
+        {
+            m_ARInterface.UpdateCamera(m_ARCamera);
+
+            Pose pose = new Pose();
+            if (m_ARInterface.TryGetPose(ref pose))
+            {
+                positionAdjustment = pose.position;
+                m_ARCamera.transform.localRotation = pose.rotation;
+                var parent = m_ARCamera.transform.parent;
+                if (parent != null)
+                    parent.localScale = Vector3.one * scale;
+            }
+            return positionAdjustment;
         }
 
         protected virtual void SetupARInterface()
