@@ -437,8 +437,8 @@ namespace UnityARInterface
                     || Quaternion.Angle(Frame.Pose.rotation, lastFramePose.rotation) > 30)
                 )
             {
-                Mapbox.Unity.Utilities.Console.Instance.Log(string.Format("Jump strength: position: {0}, rotation: {1} ", (Frame.Pose.position - lastFramePose.position).magnitude, Quaternion.Angle(Frame.Pose.rotation, lastFramePose.rotation)), "yellow");
-                OnTrackingJumped(Frame.Pose);
+                Mapbox.Unity.Utilities.Console.Instance.Log(string.Format("Jump strength: position: {0}m, rotation: {1} degrees ", (Frame.Pose.position - lastFramePose.position).magnitude, Quaternion.Angle(Frame.Pose.rotation, lastFramePose.rotation)), "yellow");
+                OnTrackingJumped(Frame.Pose, lastFramePose);
             }
 
             //Save frameTrackingState so we can compare on next frame & detect changes.

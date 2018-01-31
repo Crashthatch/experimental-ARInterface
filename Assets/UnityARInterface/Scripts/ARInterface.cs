@@ -49,7 +49,7 @@ namespace UnityARInterface
         //TODO: Implement these in iOS ARKit & Editor subclasses. Only implemented in ARCoreInterface atm.
         public static Action<Pose> trackingLost;
         public static Action<Pose> trackingStarted;
-        public static Action<Pose> trackingJumped;
+        public static Action<Pose, Pose> trackingJumped;
 
         //Subclasses may call these on* functions, and they will execute the delegate functions (external handlers for events).
         protected void OnTrackingLost(Pose pose)
@@ -60,9 +60,9 @@ namespace UnityARInterface
         {
             trackingStarted(pose);
         }
-        protected void OnTrackingJumped(Pose pose)
+        protected void OnTrackingJumped(Pose pose, Pose lastPose)
         {
-            trackingJumped(pose);
+            trackingJumped(pose, lastPose);
         }
 
 
