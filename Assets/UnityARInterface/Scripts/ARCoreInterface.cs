@@ -55,7 +55,11 @@ namespace UnityARInterface
 
         private TrackingState lastFrameTrackingState = TrackingState.Stopped;
         private Pose lastFramePose = new Pose();
-        
+        private bool _trackingLostCountdownInProgress = false;
+        private Pose _trackingLostLastPose = new Pose();
+        private long _trackingLostTime;
+
+
         public override bool IsSupported
         {
             get
@@ -421,14 +425,31 @@ namespace UnityARInterface
 
             AsyncTask.OnUpdate();
 
-            if (Frame.TrackingState != lastFrameTrackingState && Frame.TrackingState != TrackingState.Tracking)
+            if (Frame.TrackingState != lastFrameTrackingState && Frame.TrackingState != TrackingState.Tracking && !_trackingLostCountdownInProgress)
             {
-                OnTrackingLost(Frame.Pose);
+                //Debounce - if we regain tracking within a second, just send it as a TrackingJumped event - less disruptive that completely losing tracking.
+                Mapbox.Unity.Utilities.Console.Instance.Log("Tracking lost, starting countdown timer", "yellow");
+                _trackingLostCountdownInProgress = true;
+                _trackingLostLastPose = Frame.Pose;
+                _trackingLostTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
             }
 
             if (Frame.TrackingState != lastFrameTrackingState && Frame.TrackingState == TrackingState.Tracking)
             {
-                OnTrackingStarted(Frame.Pose);
+                if(!_trackingLostCountdownInProgress)
+                {
+                    OnTrackingStarted(Frame.Pose);
+                }
+                else
+                {
+                    //Regained tracking within a second, send a jump.
+                    long timeNow = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+                    Mapbox.Unity.Utilities.Console.Instance.Log("Tracking recovered after " + (timeNow - _trackingLostTime) + "ms, sending a TrackingJump instead of TrackingLost & TrackingStart. ", "yellow");
+                    OnTrackingJumped(Frame.Pose, lastFramePose);
+                    _trackingLostCountdownInProgress = false;
+                    _trackingLostLastPose = new Pose();
+                    _trackingLostTime = 0;
+                }
             }
 
             if (lastFrameTrackingState == TrackingState.Tracking //Do not fire "OnTrackingJumped" on the first frame when tracking just started (OnTrackingStarted will fire instead, see above).
@@ -439,6 +460,20 @@ namespace UnityARInterface
             {
                 Mapbox.Unity.Utilities.Console.Instance.Log(string.Format("Jump strength: position: {0}m, rotation: {1} degrees ", (Frame.Pose.position - lastFramePose.position).magnitude, Quaternion.Angle(Frame.Pose.rotation, lastFramePose.rotation)), "yellow");
                 OnTrackingJumped(Frame.Pose, lastFramePose);
+            }
+
+            //Check if trackingLost timer expired
+            if (Frame.TrackingState != TrackingState.Tracking && _trackingLostCountdownInProgress)
+            {
+                long timeNow = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+                if (timeNow - _trackingLostTime >= 1000)
+                {
+                    Mapbox.Unity.Utilities.Console.Instance.Log("Tracking lost timer expired after " + (timeNow - _trackingLostTime) + "ms, sending TrackingLost", "yellow");
+                    OnTrackingLost(_trackingLostLastPose);
+                    _trackingLostCountdownInProgress = false;
+                    _trackingLostLastPose = new Pose();
+                    _trackingLostTime = 0;
+                }
             }
 
             //Save frameTrackingState so we can compare on next frame & detect changes.
