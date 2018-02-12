@@ -426,10 +426,10 @@ namespace UnityARInterface
 
             AsyncTask.OnUpdate();
 
-            if (Frame.TrackingState != lastFrameTrackingState && Frame.TrackingState != TrackingState.Tracking && !_trackingLostCountdownInProgress)
+            if (lastFrameTrackingState == TrackingState.Tracking && Frame.TrackingState != TrackingState.Tracking && !_trackingLostCountdownInProgress)
             {
                 //Debounce - if we regain tracking within a second, just send it as a TrackingJumped event - less disruptive that completely losing tracking.
-                Mapbox.Unity.Utilities.Console.Instance.Log("Tracking lost, starting countdown timer", "yellow");
+                Mapbox.Unity.Utilities.Console.Instance.Log("Tracking lost (changed from "+ lastFrameTrackingState + " to " + Frame.TrackingState + "), starting countdown timer", "yellow");
                 _trackingLostCountdownInProgress = true;
                 _trackingLostLastPose = Frame.Pose;
                 _trackingLostTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
