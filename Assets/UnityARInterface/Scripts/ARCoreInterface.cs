@@ -217,6 +217,7 @@ namespace UnityARInterface
             Session.Destroy();
             TextureReader_destroy();
             IsRunning = false;
+            m_SessionManager = null;
         }
 
         public override bool TryGetUnscaledPose(ref Pose pose)
