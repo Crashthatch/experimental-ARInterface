@@ -18,7 +18,7 @@ namespace UnityARInterface
 
         void OnEnable()
         {
-            m_PlaneLayer = LayerMask.NameToLayer ("ARGameObject");
+            m_PlaneLayer = LayerMask.NameToLayer("Plane");
             ARInterface.planeAdded += PlaneAddedHandler;
             ARInterface.planeUpdated += PlaneUpdatedHandler;
             ARInterface.planeRemoved += PlaneRemovedHandler;
