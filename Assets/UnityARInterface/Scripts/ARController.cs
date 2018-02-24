@@ -26,9 +26,21 @@ namespace UnityARInterface
         private bool m_PointCloud;
 
         [SerializeField]
+        private bool m_BackgroundRendering = true;
+
+        [SerializeField]
         private float m_Scale = 1f;
 
         private Vector3 positionAdjustment = Vector3.zero;
+        public virtual bool BackgroundRendering {
+            get { return m_BackgroundRendering; }
+
+            set {
+                if(m_ARInterface != null){
+                    m_ARInterface.BackgroundRendering = m_BackgroundRendering = value;
+                }
+            }
+        }
 
         public float scale
         {
@@ -154,6 +166,7 @@ namespace UnityARInterface
             if (IsRunning)
             {
                 m_ARInterface.SetupCamera(m_ARCamera);
+                m_ARInterface.BackgroundRendering = BackgroundRendering;
                 Application.onBeforeRender += OnBeforeRender;
             }
             else
