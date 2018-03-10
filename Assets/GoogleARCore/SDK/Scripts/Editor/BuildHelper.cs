@@ -39,7 +39,7 @@ namespace GoogleARCoreInternal
             }
         }
 
-        public void OnPreprocessBuild(BuildTarget target, string path)
+        public void OnPreprocessBuild(UnityEditor.Build.Reporting.BuildReport report)
         {
             var isARCoreRequired = ARCoreProjectSettings.Instance.IsARCoreRequired;
 

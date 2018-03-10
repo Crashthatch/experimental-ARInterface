@@ -54,7 +54,7 @@ namespace UnityARInterface
         private Dictionary<ARAnchor, Anchor> m_Anchors = new Dictionary<ARAnchor, Anchor>();
         private bool m_BackgroundRendering;
 
-        private SessionStatus lastFrameTrackingState = TrackingState.Stopped;
+        private SessionStatus lastFrameTrackingState = SessionStatus.None;
         private Pose lastFramePose = new Pose();
         private bool _trackingLostCountdownInProgress = false;
         private Pose _trackingLostLastPose = new Pose();
@@ -174,7 +174,6 @@ namespace UnityARInterface
             m_BackgroundRenderer.camera = null;
             m_BackgroundRenderer = null;
             IsRunning = false;
-            m_SessionManager = null;
         }
 
         public override bool TryGetUnscaledPose(ref Pose pose)
@@ -381,7 +380,7 @@ namespace UnityARInterface
             if (lastFrameTrackingState == SessionStatus.Tracking && Session.Status != SessionStatus.Tracking && !_trackingLostCountdownInProgress)
             {
                 //Debounce - if we regain tracking within a second, just send it as a TrackingJumped event - less disruptive that completely losing tracking.
-                Mapbox.Unity.Utilities.Console.Instance.Log("Tracking lost (changed from "+ lastFrameTrackingState + " to " + Frame.TrackingState + "), starting countdown timer", "yellow");
+                Mapbox.Unity.Utilities.Console.Instance.Log("Tracking lost (changed from "+ lastFrameTrackingState + " to " + Session.Status+ "), starting countdown timer", "yellow");
                 _trackingLostCountdownInProgress = true;
                 _trackingLostLastPose = Frame.Pose;
                 _trackingLostTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
